@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Kibbutz Face Archive (Safe Version)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 32px; max-width: 980px; }
+    h1, h2 { margin-bottom: 8px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    input[type="text"], input[type="file"] { width: 100%; padding: 10px; margin: 8px 0 14px; }
+    button { padding: 10px 16px; cursor: pointer; }
+    ul { line-height: 1.8; }
+    .muted { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Kibbutz Face Archive</h1>
+  <p class="muted">Safe version: detects and groups faces as anonymous people for human review.</p>
+
+  <div class="card">
+    <h2>Upload image or video</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" required>
+      <button type="submit">Process upload</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Process YouTube URL</h2>
+    <form action="/youtube" method="post">
+      <input type="text" name="youtube_url" placeholder="https://www.youtube.com/watch?v=..." required>
+      <button type="submit">Download and process</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Projects</h2>
+    {% if projects %}
+      <ul>
+      {% for p in projects %}
+        <li><a href="/project/{{ p }}">{{ p }}</a></li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p>No projects yet.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

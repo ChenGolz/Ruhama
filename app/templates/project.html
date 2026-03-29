@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ project.project_id }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 32px; }
+    .cluster { border: 1px solid #ddd; border-radius: 12px; padding: 18px; margin-bottom: 24px; }
+    .thumbs { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+    .thumb { width: 140px; border: 1px solid #eee; border-radius: 8px; padding: 8px; }
+    .thumb img { width: 100%; height: auto; border-radius: 6px; display: block; }
+    .meta { font-size: 13px; color: #555; margin-top: 6px; }
+    input[type="text"] { padding: 8px; min-width: 240px; }
+    button { padding: 8px 12px; }
+    .summary { margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <p><a href="/">← Back</a></p>
+
+  <div class="summary">
+    <h1>{{ project.project_id }}</h1>
+    <p><strong>Source type:</strong> {{ project.source_type }}</p>
+    <p><strong>Source name:</strong> {{ project.source_name }}</p>
+    <p><strong>Clusters:</strong> {{ project.clusters|length }}</p>
+  </div>
+
+  {% if project.clusters %}
+    {% for cluster in project.clusters %}
+      <div class="cluster">
+        <h2>
+          {{ cluster.manual_name if cluster.manual_name else cluster.display_name }}
+          <small>({{ cluster.count }} appearances)</small>
+        </h2>
+
+        <form action="/project/{{ project.project_id }}/rename" method="post">
+          <input type="hidden" name="cluster_id" value="{{ cluster.cluster_id }}">
+          <input type="text" name="manual_name" placeholder="Enter manual name" value="{{ cluster.manual_name }}">
+          <button type="submit">Save name</button>
+        </form>
+
+        <div class="thumbs">
+          {% for item in cluster.items[:18] %}
+            <div class="thumb">
+              <img src="/data/{{ project.project_id }}/{{ item.face_path }}" alt="Face thumbnail">
+              <div class="meta">t={{ item.timestamp_sec }}s</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No faces found.</p>
+  {% endif %}
+</body>
+</html>
