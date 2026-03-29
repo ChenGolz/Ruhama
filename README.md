@@ -1,61 +1,87 @@
-# Kibbutz Face Archive — GitHub Pages Version
+# Kibbutz Face Archive (Local YouTube-Friendly Version)
 
-This is the **GitHub Pages** version of the project.
+This patch updates the original local project so it is easier to use for a YouTube-heavy workflow.
 
-It runs entirely in the browser and is designed for:
-- uploaded images
-- uploaded local video files
+## What changed
 
-It does **not** run Python, FastAPI, OpenCV, or server-side YouTube downloading.
+- Better wording for **paste a YouTube link and process**
+- Each detected face can show a **direct link back to the original YouTube video at that timestamp**
+- Adds simple launch scripts:
+  - `run_local.command` for macOS/Linux
+  - `run_local.bat` for Windows
 
-## What works on GitHub Pages
+## Important boundary
 
-- Browser-based face detection
-- Drawing face boxes on images and sampled video frames
-- Cropping detected face thumbnails
-- Downloading results as JSON
+This remains a **human-review archive tool**:
+- detects faces
+- groups anonymous appearances
+- lets people manually review
 
-## What does not work on GitHub Pages
+It does **not** automatically identify real people.
 
-- Python backend
-- OpenCV / server-side processing
-- Uploading to a server
-- Direct YouTube downloading from a pasted YouTube URL
+## How timestamp links work
 
-For YouTube videos, download the video to your computer first, then upload the video file in the page.
-
-## Files to use
-
-Replace or add these files in the root of your repo:
-
-- `index.html`
-- `assets/app.js`
-- `assets/styles.css`
-- `.nojekyll`
-- `README.md`
-
-## How to publish on GitHub Pages
-
-1. Push these files to your GitHub repo.
-2. In GitHub, open **Settings → Pages**.
-3. Under **Build and deployment**, choose:
-   - **Source:** Deploy from a branch
-   - **Branch:** `main` (or `master`)
-   - **Folder:** `/ (root)`
-4. Save.
-5. Wait a minute or two.
-6. GitHub will give you a URL like:
+When the source was a YouTube URL, each appearance gets a link like:
 
 ```text
-https://YOUR-USERNAME.github.io/YOUR-REPO/
+https://www.youtube.com/watch?v=VIDEO_ID&t=75s
 ```
 
-## Practical notes
+So reviewers can click directly to the moment the person appeared.
 
-- Processing happens in the browser, so large videos can be slow.
-- This version samples video every few seconds instead of analyzing every frame.
-- Nothing is uploaded to your server by this app.
+## Files in this patch
 
-## Main limitation
+Replace or add these files in your original repo:
 
-This version detects faces, but it does **not** automatically identify real people.
+- `app/models.py`
+- `app/main.py`
+- `app/templates/index.html`
+- `app/templates/project.html`
+- `README.md`
+- `run_local.command`
+- `run_local.bat`
+
+## Fastest way to run locally
+
+### macOS / Linux
+```bash
+chmod +x run_local.command
+./run_local.command
+```
+
+### Windows
+Double-click:
+
+```text
+run_local.bat
+```
+
+Or from terminal:
+
+```powershell
+run_local.bat
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+## Manual run
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+On Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```

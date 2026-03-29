@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Kibbutz Face Archive (Safe Version)</title>
+  <title>Kibbutz Face Archive (Local Version)</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 32px; max-width: 980px; }
     h1, h2 { margin-bottom: 8px; }
@@ -15,7 +15,7 @@
 </head>
 <body>
   <h1>Kibbutz Face Archive</h1>
-  <p class="muted">Safe version: detects and groups faces as anonymous people for human review.</p>
+  <p class="muted">Local version for archive work: upload an image/video or paste a YouTube link, then manually review the detected faces.</p>
 
   <div class="card">
     <h2>Upload image or video</h2>
@@ -26,10 +26,11 @@
   </div>
 
   <div class="card">
-    <h2>Process YouTube URL</h2>
+    <h2>Paste YouTube URL</h2>
+    <p class="muted">The app downloads the video locally first, processes it, then shows timestamp links back to the original YouTube video.</p>
     <form action="/youtube" method="post">
       <input type="text" name="youtube_url" placeholder="https://www.youtube.com/watch?v=..." required>
-      <button type="submit">Download and process</button>
+      <button type="submit">Download, process, and build timestamp links</button>
     </form>
   </div>
 

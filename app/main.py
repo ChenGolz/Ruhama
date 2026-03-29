@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -21,6 +22,40 @@ app.mount("/data", StaticFiles(directory=str(DATA_DIR)), name="data")
 
 def _suffix(filename: str) -> str:
     return Path(filename).suffix.lower()
+
+
+def _youtube_timestamp_link(url: str | None, timestamp_sec: float) -> str:
+    if not url:
+        return ""
+
+    parsed = urlparse(url)
+    host = parsed.netloc.lower()
+
+    if "youtu.be" in host:
+        video_id = parsed.path.strip("/")
+        if not video_id:
+            return ""
+        return f"https://www.youtube.com/watch?v={video_id}&t={int(round(timestamp_sec))}s"
+
+    if "youtube.com" in host:
+        qs = parse_qs(parsed.query)
+        video_id = (qs.get("v") or [""])[0]
+        if not video_id:
+            return ""
+        return f"https://www.youtube.com/watch?v={video_id}&t={int(round(timestamp_sec))}s"
+
+    return ""
+
+
+def _attach_source_links(results: dict) -> dict:
+    source_url = results.get("source_url")
+    if not source_url:
+        return results
+
+    for cluster in results.get("clusters", []):
+        for item in cluster.get("items", []):
+            item["source_link"] = _youtube_timestamp_link(source_url, float(item.get("timestamp_sec", 0)))
+    return results
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -52,7 +87,9 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
     else:
         result = process_video(upload_path, project_dir)
 
-    save_json(project_dir / "results.json", result.model_dump())
+    payload = result.model_dump()
+    payload["source_url"] = None
+    save_json(project_dir / "results.json", payload)
     return RedirectResponse(url=f"/project/{project_dir.name}", status_code=303)
 
 
@@ -62,7 +99,10 @@ async def youtube_submit(request: Request, youtube_url: str = Form(...)):
     try:
         video_path = download_youtube_video(youtube_url, project_dir / "uploads")
         result = process_video(video_path, project_dir)
-        save_json(project_dir / "results.json", result.model_dump())
+        payload = result.model_dump()
+        payload["source_url"] = youtube_url.strip()
+        payload = _attach_source_links(payload)
+        save_json(project_dir / "results.json", payload)
         return RedirectResponse(url=f"/project/{project_dir.name}", status_code=303)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to download or process YouTube video: {e}")
@@ -77,6 +117,7 @@ def project_page(request: Request, project_id: str):
         raise HTTPException(status_code=404, detail="Project not found.")
 
     results = load_json(results_path)
+    results = _attach_source_links(results)
     return templates.TemplateResponse(
         "project.html",
         {
@@ -109,5 +150,6 @@ async def rename_cluster(
     if not found:
         raise HTTPException(status_code=404, detail="Cluster not found.")
 
+    results = _attach_source_links(results)
     save_json(results_path, results)
     return RedirectResponse(url=f"/project/{project_id}", status_code=303)

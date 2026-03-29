@@ -7,6 +7,7 @@ class FaceItem(BaseModel):
     frame_path: str
     face_path: str
     bbox: List[int]
+    source_link: str = ""
 
 
 class ClusterResult(BaseModel):
@@ -21,4 +22,5 @@ class ProjectResult(BaseModel):
     project_id: str
     source_type: str
     source_name: str
+    source_url: Optional[str] = None
     clusters: List[ClusterResult] = Field(default_factory=list)
